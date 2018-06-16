@@ -41,16 +41,19 @@ class AnnounceScore extends Command
             }
             $this->info("Live match : {$row['home_team']['country']} - {$row['away_team']['country']}");
             $match = DB::table('matches')->where('fifa_id', $row['fifa_id'])->first();
-
             $liveMatchLastScoreUpdatedAt = Carbon::parse($row['last_score_update_at']);
             $matchLastScoreUpdatedAt = Carbon::parse($match->last_score_update_at);
-
             if ($liveMatchLastScoreUpdatedAt->greaterThan($matchLastScoreUpdatedAt)) {
                 $message = "{$row['home_team']['country']} {$row['home_team']['goals']} - {$row['away_team']['goals']} {$row['away_team']['country']}";
                 $this->postToSlack($message);
+                DB::table('matches')->where('id',$match->id)->update([
+                    'home_team' => json_encode($row['home_team']),
+                    'away_team' => json_encode($row['away_team']),
+                    'last_score_update_at' => $row['last_score_update_at'],
+                    'updated_at' => Carbon::now()
+                ]);
             }
         }
-
     }
 
     /**
