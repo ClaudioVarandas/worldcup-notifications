@@ -28,8 +28,6 @@ Laravel Zero was created by, and is maintained by [Nuno Maduro](https://github.c
 World Cup API is provided by http://worldcup.sfg.io/ WORLD CUP 2018 ...IN JSON
 
 
-------
-
 ## License
 
 This project is an open-source software licensed under the [MIT license](https://github.com/laravel-zero/laravel-zero/blob/stable/LICENSE.md).
