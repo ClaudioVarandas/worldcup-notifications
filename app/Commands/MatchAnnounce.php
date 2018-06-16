@@ -22,7 +22,7 @@ class MatchAnnounce extends Command
      *
      * @var string
      */
-    protected $description = 'Announce score change';
+    protected $description = 'Match announcements - Score,Start,End';
 
     /**
      * Execute the console command.
@@ -49,6 +49,7 @@ class MatchAnnounce extends Command
             if ($row['status'] != 'in progress') {
                 continue;
             }
+            $matchData = $matchData->fresh();
             $matchHomeTeamData = json_decode($matchData->home_team, true);
             $matchAwayTeamData = json_decode($matchData->away_team, true);
             // Compare goals if are diferent send notification
@@ -67,14 +68,12 @@ class MatchAnnounce extends Command
     protected function updateMatch($matchId,array $data){
         // Update the match in db
         $updateData = $data;
-        unset($updateData['home_team_events']);
-        unset($updateData['away_team_events']);
+        $updateData['home_team_events'] = json_encode($data['home_team_events']);
+        $updateData['away_team_events'] = json_encode($data['away_team_events']);
         $updateData['home_team'] = json_encode($data['home_team']);
         $updateData['away_team'] = json_encode($data['away_team']);
         $updateData['updated_at'] = Carbon::now();
-
         $result = DB::table('matches')->where('id', $matchId)->update($updateData);
-
         return $result;
     }
     protected function postToSlack($message)

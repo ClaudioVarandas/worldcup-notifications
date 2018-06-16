@@ -23,6 +23,8 @@ class CreateMatchesTable extends Migration
             $table->string('fifa_id');
             $table->json('home_team');
             $table->json('away_team');
+            $table->json('home_team_events')->nullable();
+            $table->json('away_team_events')->nullable();
             $table->string('winner')->nullable();
             $table->string('winner_code')->nullable();
             $table->string('last_event_update_at')->nullable();
