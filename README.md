@@ -16,6 +16,11 @@ I used the Laravel Zero project to write some commands to fetch World Cup matche
 - php wc2018-notifications fetch:matches
 - schedule the wc2018-notifications commands in crontab
 
+## TODO
+
+- more notification channels
+- code refactor / organization
+
 ## Requirements
 
 - PHP 7.1.3+
