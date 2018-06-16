@@ -36,10 +36,9 @@ class AnnounceScore extends Command
 
         foreach ($data as $key => $row) {
             // If the match not live skip
-            if (!in_array($row['status'], ['future', 'completed'])) {
+            if (in_array($row['status'], ['future', 'completed'])) {
                 continue;
             }
-            $this->info("Live match : {$row['home_team']['country']} - {$row['away_team']['country']}");
             $match = DB::table('matches')->where('fifa_id', $row['fifa_id'])->first();
             $liveMatchLastScoreUpdatedAt = Carbon::parse($row['last_score_update_at']);
             $matchLastScoreUpdatedAt = Carbon::parse($match->last_score_update_at);
