@@ -46,9 +46,10 @@ class FetchMatches extends Command
             $match = DB::table('matches')->where('fifa_id', $row['fifa_id'])->first();
             if (is_null($match)) {
                 DB::table('matches')->insert($row);
+                $datetime = Carbon::parse($row['datetime'])->toDateTimeString();
+                $this->info("Created : {$datetime} | {$row['home_team']['country']} - {$row['away_team']['goals']}");
             }
         }
-
     }
 
     /**
