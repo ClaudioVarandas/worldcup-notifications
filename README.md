@@ -1,6 +1,6 @@
 # FIFA World Cup 2018 notifications
-This is a WIP
-<h4> <center>This is a Laravel Zero project to fetch World Cup matches data and announces some events to notifications channels (Slack), i did this just for fun.</h4>
+This is a WIP project, developed in a couple of hours, so please this is not a best example of best practises.
+I used the Laravel Zero project to fetch World Cup matches data and announces some events to notifications channels (Slack), i did this just for fun.
 
 ## Instructions
 - cp .env.example .env
