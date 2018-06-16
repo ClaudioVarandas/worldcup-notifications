@@ -8,14 +8,14 @@ use Illuminate\Console\Scheduling\Schedule;
 use LaravelZero\Framework\Commands\Command;
 use Illuminate\Support\Facades\DB;
 
-class AnnounceScore extends Command
+class MatchAnnounce extends Command
 {
     /**
      * The signature of the command.
      *
      * @var string
      */
-    protected $signature = 'announce:score';
+    protected $signature = 'match:announce';
 
     /**
      * The description of the command.
@@ -30,16 +30,25 @@ class AnnounceScore extends Command
     public function handle(): void
     {
         $client = new Client(['base_uri' => env('WORLDCUP_API')]);
-        $uri = 'matches';
-        $res = $client->request('GET', $uri);
+        $res = $client->request('GET', 'matches');
         $data = json_decode($res->getBody(), true);
 
         foreach ($data as $key => $row) {
-            // If the match not live skip
+            $matchData = DB::table('matches')->where('fifa_id', $row['fifa_id'])->first();
+            // Notify start and end
+            if ($matchData->status == 'future' && $row['status'] == 'in progress') {
+                $message = "MATCH STARTED | {$row['home_team']['country']} - {$row['away_team']['country']}";
+                $this->postToSlack($message);
+                $this->updateMatch($matchData->id,$row);
+            } elseif($matchData->status == 'in progress' && $row['status'] == 'completed'){
+                $message = "MATCH ENDED | {$row['home_team']['country']} {$row['home_team']['goals']} - {$row['away_team']['goals']} {$row['away_team']['country']}";
+                $this->postToSlack($message);
+                $this->updateMatch($matchData->id,$row);
+            }
+            // If the match not live continue
             if ($row['status'] != 'in progress') {
                 continue;
             }
-            $matchData = DB::table('matches')->where('fifa_id', $row['fifa_id'])->first();
             $matchHomeTeamData = json_decode($matchData->home_team, true);
             $matchAwayTeamData = json_decode($matchData->away_team, true);
             // Compare goals if are diferent send notification
@@ -51,17 +60,23 @@ class AnnounceScore extends Command
                 $this->postToSlack($message);
                 $this->info("notification sent - {$message}");
             }
-            // Update the match in db
-            $updateData = $row;
-            unset($updateData['home_team_events']);
-            unset($updateData['away_team_events']);
-            $updateData['home_team'] = json_encode($row['home_team']);
-            $updateData['away_team'] = json_encode($row['away_team']);
-            $updateData['updated_at'] = Carbon::now();
-            DB::table('matches')->where('id', $matchData->id)->update($updateData);
+            $this->updateMatch($matchData->id,$row);
         }
     }
 
+    protected function updateMatch($matchId,array $data){
+        // Update the match in db
+        $updateData = $data;
+        unset($updateData['home_team_events']);
+        unset($updateData['away_team_events']);
+        $updateData['home_team'] = json_encode($data['home_team']);
+        $updateData['away_team'] = json_encode($data['away_team']);
+        $updateData['updated_at'] = Carbon::now();
+
+        $result = DB::table('matches')->where('id', $matchId)->update($updateData);
+
+        return $result;
+    }
     protected function postToSlack($message)
     {
         $client = new Client();
