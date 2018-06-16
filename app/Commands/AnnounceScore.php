@@ -52,6 +52,7 @@ class AnnounceScore extends Command
                     'last_score_update_at' => $row['last_score_update_at'],
                     'updated_at' => Carbon::now()
                 ]);
+                $this->info("notification sent, db updated - {$message}");
             }
         }
     }
