@@ -89,9 +89,21 @@ class FetchMatches extends Command
 
         $attachments = [];
         foreach ($data as $key => $row) {
-            $datetime = Carbon::parse($row['datetime'])->toDateTimeString();
-            $attachments[$key]['fallback'] = "{$datetime} | {$row['home_team']['country']} - {$row['away_team']['country']}";
-            $attachments[$key]['color'] = "#36a64f";
+            $datetime = Carbon::parse($row['datetime'])->timezone('Europe/Lisbon');
+            $attachments[$key]['fallback'] = "{$datetime->toDateTimeString()} | {$row['home_team']['country']} - {$row['away_team']['country']}";
+
+            switch ($row['status']) {
+                case 'completed':
+                    $attachments[$key]['color'] = "#ff0000";
+                    break;
+                case 'in progress':
+                    $attachments[$key]['color'] = "#fcff66";
+                    break;
+                default:
+                    $attachments[$key]['color'] = "#36a64f";
+                    break;
+            }
+
             $attachments[$key]['title'] = "{$row['home_team']['country']} - {$row['away_team']['country']}";
             $attachments[$key]['fields'][] = [
                 "title" => 'Venue',
@@ -104,13 +116,13 @@ class FetchMatches extends Command
                 "short" => true
             ];
             $attachments[$key]['fields'][] = [
-                "title" => 'Venue',
-                "value" => $row['venue'],
+                "title" => 'Datetime',
+                "value" => $datetime->toDateTimeString(),
                 "short" => true
             ];
             $attachments[$key]['fields'][] = [
-                "title" => 'Datetime',
-                "value" => $datetime,
+                "title" => 'Status',
+                "value" => $row['status'],
                 "short" => true
             ];
         }
@@ -127,6 +139,7 @@ class FetchMatches extends Command
             ],
             'body' => json_encode($postData)
         ]);
+        unset($postData['text']);
         $postData['attachments'] = $attachments;
         $client->post($webhook, [
             'headers' => [
