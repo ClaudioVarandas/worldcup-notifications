@@ -40,7 +40,7 @@ class FetchMatches extends Command
             unset($row['home_team_events']);
             unset($row['away_team_events']);
             $datetime = Carbon::parse($row['datetime'])->toDateTimeString();
-            $message = "Created : {$datetime} | {$row['home_team']['country']} - {$row['away_team']['goals']}";
+            $message = "Created : {$datetime} | {$row['home_team']['country']} - {$row['away_team']['country']}";
             $row['home_team'] = json_encode($row['home_team']);
             $row['away_team'] = json_encode($row['away_team']);
             $row['created_at'] = Carbon::now();
