@@ -40,19 +40,23 @@ class AnnounceScore extends Command
                 continue;
             }
             $match = DB::table('matches')->where('fifa_id', $row['fifa_id'])->first();
-            $liveMatchLastScoreUpdatedAt = Carbon::parse($row['last_score_update_at']);
-            $matchLastScoreUpdatedAt = Carbon::parse($match->last_score_update_at);
-            if ($liveMatchLastScoreUpdatedAt->greaterThan($matchLastScoreUpdatedAt)) {
-                $message = "{$row['home_team']['country']} {$row['home_team']['goals']} - {$row['away_team']['goals']} {$row['away_team']['country']}";
+            $matchHomeTeamData = json_decode($match->home_team, true);
+            $matchAwayTeamData = json_decode($match->away_team, true);
+
+            if ((int)$row['home_team']['goals'] !== (int)$matchHomeTeamData['goals'] || (int)$row['away_team']['goals'] !== (int)$matchAwayTeamData['goals']) {
+                $message = "{$row['time']} | {$row['home_team']['country']} {$row['home_team']['goals']} - {$row['away_team']['goals']} {$row['away_team']['country']}";
                 $this->postToSlack($message);
-                DB::table('matches')->where('id',$match->id)->update([
-                    'home_team' => json_encode($row['home_team']),
-                    'away_team' => json_encode($row['away_team']),
-                    'last_score_update_at' => $row['last_score_update_at'],
-                    'updated_at' => Carbon::now()
-                ]);
-                $this->info("notification sent, db updated - {$message}");
+                $this->info("notification sent - {$message}");
             }
+
+            $updateData = $row;
+            unset($updateData['home_team_events']);
+            unset($updateData['away_team_events']);
+            $updateData['home_team'] = json_encode($updateData['home_team']);
+            $updateData['away_team'] = json_encode($updateData['away_team']);
+            $updateData['updated_at'] = Carbon::now();
+            DB::table('matches')->where('id', $match->id)->update($updateData);
+
         }
     }
 
@@ -72,7 +76,7 @@ class AnnounceScore extends Command
         $client = new Client();
         $webhook = env('SLACK_WEBOOK_URL');
 
-        if(empty($webhook)){
+        if (empty($webhook)) {
             return false;
         }
 
@@ -82,7 +86,7 @@ class AnnounceScore extends Command
             'text' => $message
         ];
 
-        $client->post($webhook,[
+        $client->post($webhook, [
             'headers' => [
                 'content-type' => 'application/json'
             ],
