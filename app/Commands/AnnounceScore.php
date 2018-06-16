@@ -72,7 +72,7 @@ class AnnounceScore extends Command
         $client = new Client();
         $webhook = env('SLACK_WEBOOK_URL');
 
-        if(is_null($webhook)){
+        if(empty($webhook)){
             return false;
         }
 

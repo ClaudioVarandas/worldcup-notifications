@@ -29,7 +29,7 @@ class FetchMatches extends Command
      */
     public function handle(): void
     {
-        $client = new Client(['base_uri' => 'http://worldcup.sfg.io']);
+        $client = new Client(['base_uri' => env('WORLDCUP_API')]);
 
         $uri = 'matches';
         $res = $client->request('GET', $uri);
