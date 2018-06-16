@@ -35,13 +35,17 @@ class AnnounceScore extends Command
         $data = json_decode($res->getBody(), true);
 
         foreach ($data as $key => $row) {
-            // If the match not live skip
-            if (in_array($row['status'], ['future', 'completed'])) {
-                continue;
-            }
             $match = DB::table('matches')->where('fifa_id', $row['fifa_id'])->first();
             $matchHomeTeamData = json_decode($match->home_team, true);
             $matchAwayTeamData = json_decode($match->away_team, true);
+            DB::table('matches')->where('id', $match->id)->update([
+                'status' => $row['status'],
+                'updated_at' => Carbon::now()
+            ]);
+            // If the match not live skip
+            if ($row['status'] != 'in progress') {
+                continue;
+            }
             // Compare goals if are diferent send notification
             if (
                 (int)$row['home_team']['goals'] !== (int)$matchHomeTeamData['goals'] ||
@@ -55,8 +59,8 @@ class AnnounceScore extends Command
             $updateData = $row;
             unset($updateData['home_team_events']);
             unset($updateData['away_team_events']);
-            $updateData['home_team'] = json_encode($updateData['home_team']);
-            $updateData['away_team'] = json_encode($updateData['away_team']);
+            $updateData['home_team'] = json_encode($row['home_team']);
+            $updateData['away_team'] = json_encode($row['away_team']);
             $updateData['updated_at'] = Carbon::now();
             DB::table('matches')->where('id', $match->id)->update($updateData);
         }
