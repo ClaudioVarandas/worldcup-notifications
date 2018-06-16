@@ -10,32 +10,53 @@ use Illuminate\Support\Facades\DB;
 
 class FetchMatches extends Command
 {
+    const ALLOWED_TYPES = [
+        'all',
+        'today',
+        'tomorrow'
+    ];
+
     /**
      * The signature of the command.
      *
      * @var string
      */
-    protected $signature = 'fetch:matches';
+    protected $signature = 'fetch:matches {type=all : List type today|tomorrow}';
 
     /**
      * The description of the command.
      *
      * @var string
      */
-    protected $description = 'Fetch all matches';
+    protected $description = 'Fetch matches';
 
     /**
      * Execute the console command.
      */
     public function handle(): void
     {
+        $type = $this->argument('type');
+
+        if (!in_array($type, self::ALLOWED_TYPES)) {
+            return;
+        }
+
+        $uri = $type != 'all' ? "matches/{$type}" : 'matches';
+
         $client = new Client(['base_uri' => env('WORLDCUP_API')]);
-
-        $uri = 'matches';
         $res = $client->request('GET', $uri);
-
         $data = json_decode($res->getBody(), true);
 
+        if ($type == 'all') {
+            $this->processMatches($data);
+        } else {
+            $this->postToSlack($data, $type);
+        }
+
+    }
+
+    public function processMatches(array $data)
+    {
         foreach ($data as $row) {
             unset($row['home_team_events']);
             unset($row['away_team_events']);
@@ -49,11 +70,72 @@ class FetchMatches extends Command
             if (is_null($match)) {
                 DB::table('matches')->insert($row);
                 $this->info("Created : " . $message);
-            }else{
-                DB::table('matches')->where('id',$match->id)->update($row);
+            } else {
+                DB::table('matches')->where('id', $match->id)->update($row);
                 $this->info("Updated : " . $message);
             }
         }
+    }
+
+    protected function postToSlack(array $data, string $type)
+    {
+        $client = new Client();
+        $webhook = env('SLACK_WEBOOK_URL');
+        if (empty($webhook)) {
+            return false;
+        }
+
+        $pretextMessage = $type == 'today' ? "Today matches" : "Tomorrow matches";
+
+        $attachments = [];
+        foreach ($data as $key => $row) {
+            $datetime = Carbon::parse($row['datetime'])->toDateTimeString();
+            $attachments[$key]['fallback'] = "{$datetime} | {$row['home_team']['country']} - {$row['away_team']['country']}";
+            $attachments[$key]['color'] = "#36a64f";
+            $attachments[$key]['title'] = "{$row['home_team']['country']} - {$row['away_team']['country']}";
+            $attachments[$key]['fields'][] = [
+                "title" => 'Venue',
+                "value" => $row['venue'],
+                "short" => true
+            ];
+            $attachments[$key]['fields'][] = [
+                "title" => 'Location',
+                "value" => $row['location'],
+                "short" => true
+            ];
+            $attachments[$key]['fields'][] = [
+                "title" => 'Venue',
+                "value" => $row['venue'],
+                "short" => true
+            ];
+            $attachments[$key]['fields'][] = [
+                "title" => 'Datetime',
+                "value" => $datetime,
+                "short" => true
+            ];
+        }
+        // Prepare data
+        $postData = [
+            'channel' => env('SLACK_CHANNEL'),
+            'icon_emoji' => ':soccer:',
+        ];
+        // Send requests
+        $postData['text'] = $pretextMessage;
+        $client->post($webhook, [
+            'headers' => [
+                'content-type' => 'application/json'
+            ],
+            'body' => json_encode($postData)
+        ]);
+        $postData['attachments'] = $attachments;
+        $client->post($webhook, [
+            'headers' => [
+                'content-type' => 'application/json'
+            ],
+            'body' => json_encode($postData)
+        ]);
+
+        return true;
     }
 
     /**
