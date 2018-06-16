@@ -68,12 +68,12 @@ class MatchAnnounce extends Command
             $awayTeamLiveEventsData = $row['away_team_events'];
             if(count($homeTeamLiveEventsData) > count($matchHomeTeamEventsData)){
                 $event = end($homeTeamLiveEventsData);
-                $message = "{$event['time']} | {$event['type_of_event']} - {$event['player']}";
+                $message = "{$row['home_team']['code']} - {$row['away_team']['code']} | {$event['time']} | {$event['type_of_event']} - {$event['player']}";
                 $this->postToSlack($message);
             }
             if (count($awayTeamLiveEventsData) > count($matchAwayTeamEventsData)){
                 $event = end($awayTeamLiveEventsData);
-                $message = "{$event['time']} | {$event['type_of_event']} - {$event['player']}";
+                $message = "{$row['home_team']['code']} - {$row['away_team']['code']} | {$event['time']} | {$event['type_of_event']} - {$event['player']}";
                 $this->postToSlack($message);
             }
 

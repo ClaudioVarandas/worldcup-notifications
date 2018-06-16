@@ -21,7 +21,7 @@ class FetchMatches extends Command
      *
      * @var string
      */
-    protected $signature = 'fetch:matches {type=all : List type today|tomorrow}';
+    protected $signature = 'fetch:matches {type=all : List type all|today|tomorrow}';
 
     /**
      * The description of the command.
@@ -165,6 +165,6 @@ class FetchMatches extends Command
      */
     public function schedule(Schedule $schedule): void
     {
-        $schedule->command(static::class, ['type' => 'today'])->hourly()->between('8:00', '23:30');
+        $schedule->command(static::class, ['today'])->hourly()->between('8:00', '23:30');
     }
 }
