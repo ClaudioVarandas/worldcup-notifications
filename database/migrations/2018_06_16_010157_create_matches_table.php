@@ -17,7 +17,7 @@ class CreateMatchesTable extends Migration
             $table->increments('id');
             $table->string('venue');
             $table->string('location');
-            $table->dateTimeTz('datetime');
+            $table->string('datetime');
             $table->string('status');
             $table->string('time')->nullable();
             $table->string('fifa_id');
@@ -25,8 +25,8 @@ class CreateMatchesTable extends Migration
             $table->json('away_team');
             $table->string('winner')->nullable();
             $table->string('winner_code')->nullable();
-            $table->timestamp('last_event_update_at')->nullable();
-            $table->timestamp('last_score_update_at')->nullable();
+            $table->string('last_event_update_at')->nullable();
+            $table->string('last_score_update_at')->nullable();
             $table->timestamps();
         });
     }
