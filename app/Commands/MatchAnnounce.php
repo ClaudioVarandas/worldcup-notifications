@@ -49,7 +49,7 @@ class MatchAnnounce extends Command
             if ($row['status'] != 'in progress') {
                 continue;
             }
-            $matchData = $matchData->fresh();
+            $matchData = DB::table('matches')->where('fifa_id', $row['fifa_id'])->first();
             $matchHomeTeamData = json_decode($matchData->home_team, true);
             $matchAwayTeamData = json_decode($matchData->away_team, true);
             // Compare goals if are diferent send notification
