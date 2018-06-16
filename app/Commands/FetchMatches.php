@@ -50,7 +50,7 @@ class FetchMatches extends Command
                 DB::table('matches')->insert($row);
                 $this->info("Created : " . $message);
             }else{
-                DB::table('matches')->update($row);
+                DB::table('matches')->where('id',$match->id)->update($row);
                 $this->info("Updated : " . $message);
             }
         }
