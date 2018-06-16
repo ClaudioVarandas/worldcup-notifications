@@ -125,6 +125,13 @@ class FetchMatches extends Command
                 "value" => $row['status'],
                 "short" => true
             ];
+            if ($row['status'] == 'completed' || $row['status'] == 'in progress') {
+                $attachments[$key]['fields'][] = [
+                    "title" => 'Score',
+                    "value" => "{$row['home_team']['code']} {$row['home_team']['goals']} - {$row['away_team']['code']} {$row['away_team']['goals']}",
+                    "short" => true
+                ];
+            }
         }
         // Prepare data
         $postData = [
@@ -158,6 +165,6 @@ class FetchMatches extends Command
      */
     public function schedule(Schedule $schedule): void
     {
-        $schedule->command(static::class)->dailyAt('23:30:00');
+        $schedule->command(static::class, ['type' => 'today'])->hourly()->between('8:00', '23:30');
     }
 }

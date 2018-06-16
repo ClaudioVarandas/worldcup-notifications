@@ -35,17 +35,13 @@ class AnnounceScore extends Command
         $data = json_decode($res->getBody(), true);
 
         foreach ($data as $key => $row) {
-            $match = DB::table('matches')->where('fifa_id', $row['fifa_id'])->first();
-            $matchHomeTeamData = json_decode($match->home_team, true);
-            $matchAwayTeamData = json_decode($match->away_team, true);
-            DB::table('matches')->where('id', $match->id)->update([
-                'status' => $row['status'],
-                'updated_at' => Carbon::now()
-            ]);
             // If the match not live skip
             if ($row['status'] != 'in progress') {
                 continue;
             }
+            $matchData = DB::table('matches')->where('fifa_id', $row['fifa_id'])->first();
+            $matchHomeTeamData = json_decode($matchData->home_team, true);
+            $matchAwayTeamData = json_decode($matchData->away_team, true);
             // Compare goals if are diferent send notification
             if (
                 (int)$row['home_team']['goals'] !== (int)$matchHomeTeamData['goals'] ||
@@ -62,20 +58,9 @@ class AnnounceScore extends Command
             $updateData['home_team'] = json_encode($row['home_team']);
             $updateData['away_team'] = json_encode($row['away_team']);
             $updateData['updated_at'] = Carbon::now();
-            DB::table('matches')->where('id', $match->id)->update($updateData);
+            DB::table('matches')->where('id', $matchData->id)->update($updateData);
         }
     }
-
-    /**
-     * Define the command's schedule.
-     *
-     * @param  \Illuminate\Console\Scheduling\Schedule $schedule
-     */
-    public function schedule(Schedule $schedule): void
-    {
-        $schedule->command(static::class)->everyMinute();
-    }
-
 
     protected function postToSlack($message)
     {
@@ -99,5 +84,15 @@ class AnnounceScore extends Command
         ]);
 
         return true;
+    }
+
+    /**
+     * Define the command's schedule.
+     *
+     * @param  \Illuminate\Console\Scheduling\Schedule $schedule
+     */
+    public function schedule(Schedule $schedule): void
+    {
+        $schedule->command(static::class)->everyMinute()->withoutOverlapping();
     }
 }
