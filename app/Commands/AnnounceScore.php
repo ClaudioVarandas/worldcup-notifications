@@ -42,13 +42,16 @@ class AnnounceScore extends Command
             $match = DB::table('matches')->where('fifa_id', $row['fifa_id'])->first();
             $matchHomeTeamData = json_decode($match->home_team, true);
             $matchAwayTeamData = json_decode($match->away_team, true);
-
-            if ((int)$row['home_team']['goals'] !== (int)$matchHomeTeamData['goals'] || (int)$row['away_team']['goals'] !== (int)$matchAwayTeamData['goals']) {
+            // Compare goals if are diferent send notification
+            if (
+                (int)$row['home_team']['goals'] !== (int)$matchHomeTeamData['goals'] ||
+                (int)$row['away_team']['goals'] !== (int)$matchAwayTeamData['goals']
+            ) {
                 $message = "{$row['time']} | {$row['home_team']['country']} {$row['home_team']['goals']} - {$row['away_team']['goals']} {$row['away_team']['country']}";
                 $this->postToSlack($message);
                 $this->info("notification sent - {$message}");
             }
-
+            // Update the match in db
             $updateData = $row;
             unset($updateData['home_team_events']);
             unset($updateData['away_team_events']);
@@ -56,7 +59,6 @@ class AnnounceScore extends Command
             $updateData['away_team'] = json_encode($updateData['away_team']);
             $updateData['updated_at'] = Carbon::now();
             DB::table('matches')->where('id', $match->id)->update($updateData);
-
         }
     }
 
@@ -75,17 +77,16 @@ class AnnounceScore extends Command
     {
         $client = new Client();
         $webhook = env('SLACK_WEBOOK_URL');
-
         if (empty($webhook)) {
             return false;
         }
-
+        // Prepare data
         $data = [
             'channel' => env('SLACK_CHANNEL'),
             'icon_emoji' => ':soccer:',
             'text' => $message
         ];
-
+        // Send request
         $client->post($webhook, [
             'headers' => [
                 'content-type' => 'application/json'
