@@ -52,6 +52,8 @@ class MatchAnnounce extends Command
             $matchData = DB::table('matches')->where('fifa_id', $row['fifa_id'])->first();
             $matchHomeTeamData = json_decode($matchData->home_team, true);
             $matchAwayTeamData = json_decode($matchData->away_team, true);
+            $matchHomeTeamEventsData = json_decode($matchData->home_team_events, true);
+            $matchAwayTeamEventsData = json_decode($matchData->away_team_events, true);
             // Compare goals if are diferent send notification
             if (
                 (int)$row['home_team']['goals'] !== (int)$matchHomeTeamData['goals'] ||
@@ -61,6 +63,20 @@ class MatchAnnounce extends Command
                 $this->postToSlack($message);
                 $this->info("notification sent - {$message}");
             }
+
+            $homeTeamLiveEventsData = $row['home_team_events'];
+            $awayTeamLiveEventsData = $row['away_team_events'];
+            if(count($homeTeamLiveEventsData) > count($matchHomeTeamEventsData)){
+                $event = end($homeTeamLiveEventsData);
+                $message = "{$event['time']} | {$event['type_of_event']} - {$event['player']}";
+                $this->postToSlack($message);
+            }
+            if (count($awayTeamLiveEventsData) > count($matchAwayTeamEventsData)){
+                $event = end($awayTeamLiveEventsData);
+                $message = "{$event['time']} | {$event['type_of_event']} - {$event['player']}";
+                $this->postToSlack($message);
+            }
+
             $this->updateMatch($matchData->id,$row);
         }
     }

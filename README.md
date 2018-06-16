@@ -5,16 +5,21 @@ This is a WIP project, developed in a couple of hours, so this is not a best exa
 I used the Laravel Zero project to write some commands to fetch World Cup matches data and announces some events to notifications channels (Slack).
 
 
-
 ## Instructions
+- create a database
 - cp .env.example .env
 - set env vars
 - composer install
 - php wc2018-notifications app:install database
-- php wc2018-notifications migrate
-- php wc2018-notifications migrate
+- php wc2018-notifications migrate:fresh
 - php wc2018-notifications fetch:matches
-- schedule the wc2018-notifications commands in crontab
+- schedule wc2018-notifications commands in crontab
+
+## Notifications 
+
+- Match start / end
+- Score change
+- Match events (penalty, card, goal, ...)
 
 ## TODO
 
