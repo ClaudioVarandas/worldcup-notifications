@@ -80,11 +80,6 @@ class FetchMatches extends Command
     protected function postToSlack(array $data, string $type)
     {
         $client = new Client();
-        $webhook = env('SLACK_WEBOOK_URL');
-        if (empty($webhook)) {
-            return false;
-        }
-
         $pretextMessage = $type == 'today' ? "Today matches" : "Tomorrow matches";
 
         $attachments = [];
@@ -133,28 +128,37 @@ class FetchMatches extends Command
                 ];
             }
         }
-        // Prepare data
-        $postData = [
-            'channel' => env('SLACK_CHANNEL'),
-            'icon_emoji' => ':soccer:',
-        ];
-        // Send requests
-        $postData['text'] = $pretextMessage;
-        $client->post($webhook, [
-            'headers' => [
-                'content-type' => 'application/json'
-            ],
-            'body' => json_encode($postData)
-        ]);
-        unset($postData['text']);
-        $postData['attachments'] = $attachments;
-        $client->post($webhook, [
-            'headers' => [
-                'content-type' => 'application/json'
-            ],
-            'body' => json_encode($postData)
-        ]);
 
+
+        $webhooks = config('slack.webhooks');
+        foreach ($webhooks as $webhook => $channel) {
+            if (empty($webhook)) {
+                continue;
+            }
+            // Prepare data
+            $postData = [
+                'icon_emoji' => ':soccer:',
+            ];
+            if(!is_null($channel)){
+                $data['channel'] = $channel;
+            }
+            // Send requests
+            $postData['text'] = $pretextMessage;
+            $client->post($webhook, [
+                'headers' => [
+                    'content-type' => 'application/json'
+                ],
+                'body' => json_encode($postData)
+            ]);
+            unset($postData['text']);
+            $postData['attachments'] = $attachments;
+            $client->post($webhook, [
+                'headers' => [
+                    'content-type' => 'application/json'
+                ],
+                'body' => json_encode($postData)
+            ]);
+        }
         return true;
     }
 

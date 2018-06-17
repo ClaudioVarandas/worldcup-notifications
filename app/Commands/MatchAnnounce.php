@@ -39,11 +39,11 @@ class MatchAnnounce extends Command
             if ($matchData->status == 'future' && $row['status'] == 'in progress') {
                 $message = "MATCH STARTED | {$row['home_team']['country']} - {$row['away_team']['country']}";
                 $this->postToSlack($message);
-                $this->updateMatch($matchData->id,$row);
-            } elseif($matchData->status == 'in progress' && $row['status'] == 'completed'){
+                $this->updateMatch($matchData->id, $row);
+            } elseif ($matchData->status == 'in progress' && $row['status'] == 'completed') {
                 $message = "MATCH ENDED | {$row['home_team']['country']} {$row['home_team']['goals']} - {$row['away_team']['goals']} {$row['away_team']['country']}";
                 $this->postToSlack($message);
-                $this->updateMatch($matchData->id,$row);
+                $this->updateMatch($matchData->id, $row);
             }
             // If the match not live continue
             if ($row['status'] != 'in progress') {
@@ -66,22 +66,23 @@ class MatchAnnounce extends Command
 
             $homeTeamLiveEventsData = $row['home_team_events'];
             $awayTeamLiveEventsData = $row['away_team_events'];
-            if(count($homeTeamLiveEventsData) > count($matchHomeTeamEventsData)){
+            if (count($homeTeamLiveEventsData) > count($matchHomeTeamEventsData)) {
                 $event = end($homeTeamLiveEventsData);
                 $message = "{$row['home_team']['code']} - {$row['away_team']['code']} | {$event['time']} | {$event['type_of_event']} - {$event['player']}";
                 $this->postToSlack($message);
             }
-            if (count($awayTeamLiveEventsData) > count($matchAwayTeamEventsData)){
+            if (count($awayTeamLiveEventsData) > count($matchAwayTeamEventsData)) {
                 $event = end($awayTeamLiveEventsData);
                 $message = "{$row['home_team']['code']} - {$row['away_team']['code']} | {$event['time']} | {$event['type_of_event']} - {$event['player']}";
                 $this->postToSlack($message);
             }
 
-            $this->updateMatch($matchData->id,$row);
+            $this->updateMatch($matchData->id, $row);
         }
     }
 
-    protected function updateMatch($matchId,array $data){
+    protected function updateMatch($matchId, array $data)
+    {
         // Update the match in db
         $updateData = $data;
         $updateData['home_team_events'] = json_encode($data['home_team_events']);
@@ -92,27 +93,31 @@ class MatchAnnounce extends Command
         $result = DB::table('matches')->where('id', $matchId)->update($updateData);
         return $result;
     }
+
     protected function postToSlack($message)
     {
         $client = new Client();
-        $webhook = env('SLACK_WEBOOK_URL');
-        if (empty($webhook)) {
-            return false;
+        $webhooks = config('slack.webhooks');
+        foreach ($webhooks as $webhook => $channel) {
+            if (empty($webhook)) {
+                continue;
+            }
+            // Prepare data
+            $data = [
+                'icon_emoji' => ':soccer:',
+                'text' => $message
+            ];
+            if(!is_null($channel)){
+                $data['channel'] = $channel;
+            }
+            // Send request
+            $client->post($webhook, [
+                'headers' => [
+                    'content-type' => 'application/json'
+                ],
+                'body' => json_encode($data)
+            ]);
         }
-        // Prepare data
-        $data = [
-            'channel' => env('SLACK_CHANNEL'),
-            'icon_emoji' => ':soccer:',
-            'text' => $message
-        ];
-        // Send request
-        $client->post($webhook, [
-            'headers' => [
-                'content-type' => 'application/json'
-            ],
-            'body' => json_encode($data)
-        ]);
-
         return true;
     }
 
