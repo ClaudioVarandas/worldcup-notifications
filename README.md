@@ -1,4 +1,4 @@
-# FIFA World Cup 2018 notifications
+# FIFA World Cup 2018 Slack notifications
 This is a WIP project, developed in a couple of hours in the second day of the World Cup 2018, so this is not a best example of PHP Code or best practises, my goal its to have something functional and i did jut for fun :)
 
 
