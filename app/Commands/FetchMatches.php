@@ -169,6 +169,6 @@ class FetchMatches extends Command
      */
     public function schedule(Schedule $schedule): void
     {
-        $schedule->command(static::class, ['today'])->hourly(50)->between('12:00', '23:30');
+        $schedule->command(static::class, ['today'])->hourly(50)->between('12:00', '19:00');
     }
 }
