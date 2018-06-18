@@ -41,7 +41,7 @@ class FetchMatches extends Command
             return;
         }
 
-        $uri = $type != 'all' ? "matches/{$type}" : 'matches';
+        $uri = $type != 'all' ? "matches/{$type}" : 'matches?details=true';
 
         $client = new Client(['base_uri' => env('WORLDCUP_API')]);
         $res = $client->request('GET', $uri);
@@ -58,16 +58,18 @@ class FetchMatches extends Command
     public function processMatches(array $data)
     {
         foreach ($data as $row) {
-            unset($row['home_team_events']);
-            unset($row['away_team_events']);
             $datetime = Carbon::parse($row['datetime'])->toDateTimeString();
             $message = "{$datetime} | {$row['home_team']['country']} - {$row['away_team']['country']}";
             $row['home_team'] = json_encode($row['home_team']);
             $row['away_team'] = json_encode($row['away_team']);
-            $row['created_at'] = Carbon::now();
+            $row['home_team_events'] = isset($row['home_team_events']) ? json_encode($row['home_team_events']) : null;
+            $row['away_team_events'] = isset($row['away_team_events']) ? json_encode($row['away_team_events']) : null;
+            $row['home_team_statistics'] = isset($row['home_team_statistics']) ? json_encode($row['home_team_statistics']) : null;
+            $row['away_team_statistics'] = isset($row['away_team_statistics']) ? json_encode($row['away_team_statistics']) : null;
             $row['updated_at'] = Carbon::now();
             $match = DB::table('matches')->where('fifa_id', $row['fifa_id'])->first();
             if (is_null($match)) {
+                $row['created_at'] = Carbon::now();
                 DB::table('matches')->insert($row);
                 $this->info("Created : " . $message);
             } else {
@@ -119,6 +121,16 @@ class FetchMatches extends Command
                 "title" => 'Status',
                 "value" => $row['status'],
                 "short" => true
+            ];
+            $attachments[$key]['fields'][] = [
+                "title" => 'Home Team Stats',
+                "value" => json_encode($row['home_team_statistics'],JSON_PRETTY_PRINT),
+                "short" => false
+            ];
+            $attachments[$key]['fields'][] = [
+                "title" => 'Away Team Stats',
+                "value" => json_encode($row['away_team_statistics'],JSON_PRETTY_PRINT),
+                "short" => false
             ];
             if ($row['status'] == 'completed' || $row['status'] == 'in progress') {
                 $attachments[$key]['fields'][] = [

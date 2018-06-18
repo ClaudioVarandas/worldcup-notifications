@@ -25,6 +25,8 @@ class CreateMatchesTable extends Migration
             $table->json('away_team');
             $table->json('home_team_events')->nullable();
             $table->json('away_team_events')->nullable();
+            $table->json('home_team_statistics')->nullable();
+            $table->json('away_team_statistics')->nullable();
             $table->string('winner')->nullable();
             $table->string('winner_code')->nullable();
             $table->string('last_event_update_at')->nullable();

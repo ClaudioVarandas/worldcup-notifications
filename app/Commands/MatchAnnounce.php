@@ -30,7 +30,7 @@ class MatchAnnounce extends Command
     public function handle(): void
     {
         $client = new Client(['base_uri' => env('WORLDCUP_API')]);
-        $res = $client->request('GET', 'matches');
+        $res = $client->request('GET', 'matches/today');
         $data = json_decode($res->getBody(), true);
 
         foreach ($data as $key => $row) {
@@ -87,6 +87,8 @@ class MatchAnnounce extends Command
         $updateData = $data;
         $updateData['home_team_events'] = isset($data['home_team_events']) ? json_encode($data['home_team_events']) : null;
         $updateData['away_team_events'] = isset($data['away_team_events']) ? json_encode($data['away_team_events']) : null;
+        $updateData['home_team_statistics'] = isset($data['home_team_statistics']) ? json_encode($data['home_team_statistics']) : null;
+        $updateData['away_team_statistics'] = isset($data['away_team_statistics']) ? json_encode($data['away_team_statistics']) : null;
         $updateData['home_team'] = json_encode($data['home_team']);
         $updateData['away_team'] = json_encode($data['away_team']);
         $updateData['updated_at'] = Carbon::now();
@@ -107,7 +109,7 @@ class MatchAnnounce extends Command
                 'icon_emoji' => ':soccer:',
                 'text' => $message
             ];
-            if(!is_null($webhook['channel'])){
+            if (!is_null($webhook['channel'])) {
                 $data['channel'] = $webhook['channel'];
             }
             // Send request
