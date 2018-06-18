@@ -152,7 +152,7 @@ class FetchMatches extends Command
                 'icon_emoji' => ':soccer:',
             ];
             if (!is_null($webhook['channel'])) {
-                $data['channel'] = $webhook['channel'];
+                $postData['channel'] = $webhook['channel'];
             }
             // Send requests
             $postData['text'] = $pretextMessage;
