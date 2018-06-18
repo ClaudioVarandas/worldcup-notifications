@@ -80,7 +80,7 @@ class FetchMatches extends Command
     protected function postToSlack(array $data, string $type)
     {
         $client = new Client();
-        $pretextMessage = $type == 'today' ? "Today matches" : "Tomorrow matches";
+        $pretextMessage = $type == 'today' ? "Today matches status" : "Tomorrow matches";
 
         $attachments = [];
         foreach ($data as $key => $row) {
@@ -169,6 +169,9 @@ class FetchMatches extends Command
      */
     public function schedule(Schedule $schedule): void
     {
-        $schedule->command(static::class, ['today'])->hourly(50)->between('12:00', '19:00');
+        $schedule->command(static::class, ['today'])->dailyAt('08:30');
+        $schedule->command(static::class, ['today'])->dailyAt('15:00');
+        $schedule->command(static::class, ['today'])->dailyAt('18:30');
+        $schedule->command(static::class, ['today'])->dailyAt('21:30');
     }
 }
