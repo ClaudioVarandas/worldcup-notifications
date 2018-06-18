@@ -97,9 +97,9 @@ class MatchAnnounce extends Command
     protected function postToSlack($message)
     {
         $client = new Client();
-        $webhooks = config('slack.webhooks');
-        foreach ($webhooks as $webhook => $channel) {
-            if (empty($webhook)) {
+        $webhooks = config('slack.teams');
+        foreach ($webhooks as $team => $webhook) {
+            if (empty($webhook['url'])) {
                 continue;
             }
             // Prepare data
@@ -107,11 +107,11 @@ class MatchAnnounce extends Command
                 'icon_emoji' => ':soccer:',
                 'text' => $message
             ];
-            if(!is_null($channel)){
-                $data['channel'] = $channel;
+            if(!is_null($webhook['channel'])){
+                $data['channel'] = $webhook['channel'];
             }
             // Send request
-            $client->post($webhook, [
+            $client->post($webhook['url'], [
                 'headers' => [
                     'content-type' => 'application/json'
                 ],

@@ -130,21 +130,21 @@ class FetchMatches extends Command
         }
 
 
-        $webhooks = config('slack.webhooks');
-        foreach ($webhooks as $webhook => $channel) {
-            if (empty($webhook)) {
+        $webhooks = config('slack.teams');
+        foreach ($webhooks as $team => $webhook) {
+            if (empty($webhook['url'])) {
                 continue;
             }
             // Prepare data
             $postData = [
                 'icon_emoji' => ':soccer:',
             ];
-            if(!is_null($channel)){
-                $data['channel'] = $channel;
+            if (!is_null($webhook['channel'])) {
+                $data['channel'] = $webhook['channel'];
             }
             // Send requests
             $postData['text'] = $pretextMessage;
-            $client->post($webhook, [
+            $client->post($webhook['url'], [
                 'headers' => [
                     'content-type' => 'application/json'
                 ],
@@ -152,7 +152,7 @@ class FetchMatches extends Command
             ]);
             unset($postData['text']);
             $postData['attachments'] = $attachments;
-            $client->post($webhook, [
+            $client->post($webhook['url'], [
                 'headers' => [
                     'content-type' => 'application/json'
                 ],
@@ -169,9 +169,9 @@ class FetchMatches extends Command
      */
     public function schedule(Schedule $schedule): void
     {
-        $schedule->command(static::class, ['today'])->dailyAt('08:30');
-        $schedule->command(static::class, ['today'])->dailyAt('15:00');
-        $schedule->command(static::class, ['today'])->dailyAt('18:30');
-        $schedule->command(static::class, ['today'])->dailyAt('21:30');
+        $schedule->command(static::class, ['today'])->dailyAt('08:30')->timezone(config('app.timezone'));
+        $schedule->command(static::class, ['today'])->dailyAt('15:00')->timezone(config('app.timezone'));
+        $schedule->command(static::class, ['today'])->dailyAt('18:30')->timezone(config('app.timezone'));
+        $schedule->command(static::class, ['today'])->dailyAt('21:30')->timezone(config('app.timezone'));
     }
 }

@@ -52,4 +52,6 @@ return [
         App\Providers\AppServiceProvider::class,
     ],
 
+    'timezone' => env('TIMEZONE','Europe/Lisbon')
+
 ];

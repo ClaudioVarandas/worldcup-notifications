@@ -1,8 +1,14 @@
 <?php
 
 return [
-    'webhooks' => [
-        env('SLACK_WEBHOOK_URL_1') => env('SLACK_WEBHOOK_URL_1_CHANNEL'),
-        env('SLACK_WEBHOOK_URL_2') => env('SLACK_WEBHOOK_URL_2_CHANNEL')
+    'teams' => [
+        'symplworks' => [
+            'url' => env('SLACK_SYMPLWORKS_WEBHOOK_URL'),
+            'channel' => env('SLACK_SYMPLWORKS_WEBHOOK_CHANNEL')
+        ],
+        'laravel-portugal' => [
+            'url' => env('SLACK_LARAVELPORTUGAL_WEBHOOK_URL'),
+            'channel' => env('SLACK_LARAVELPORTUGAL_WEBHOOK_CHANNEL')
+        ]
     ]
 ];

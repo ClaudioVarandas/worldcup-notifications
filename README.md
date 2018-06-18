@@ -30,7 +30,7 @@ I used the Laravel Zero project to write some commands to fetch World Cup matche
 
 - PHP 7.1.3+
 - Composer
-- Sqlite
+- Mysql 5.7 or compatible
 
 ## Thanks 
 
