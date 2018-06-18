@@ -73,7 +73,7 @@ class MatchAnnounce extends Command
             }
             if (count($awayTeamLiveEventsData) > count($matchAwayTeamEventsData)) {
                 $event = end($awayTeamLiveEventsData);
-                $message = "{$row['home_team']['country']} | {$event['time']} | {$event['type_of_event']} - {$event['player']}";
+                $message = "{$row['away_team']['country']} | {$event['time']} | {$event['type_of_event']} - {$event['player']}";
                 $this->postToSlack($message);
             }
 
