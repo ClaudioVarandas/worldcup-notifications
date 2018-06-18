@@ -85,8 +85,8 @@ class MatchAnnounce extends Command
     {
         // Update the match in db
         $updateData = $data;
-        $updateData['home_team_events'] = json_encode($data['home_team_events']);
-        $updateData['away_team_events'] = json_encode($data['away_team_events']);
+        $updateData['home_team_events'] = isset($data['home_team_events']) ? json_encode($data['home_team_events']) : [];
+        $updateData['away_team_events'] = isset($data['away_team_events']) ? json_encode($data['away_team_events']) : [];
         $updateData['home_team'] = json_encode($data['home_team']);
         $updateData['away_team'] = json_encode($data['away_team']);
         $updateData['updated_at'] = Carbon::now();
