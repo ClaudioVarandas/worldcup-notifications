@@ -6,20 +6,20 @@ I used the Laravel Zero project to write some commands to fetch World Cup matche
 
 
 ## Instructions
-- create a database
+- create mysql database
 - cp .env.example .env
-- set env vars
+- set environment variables
 - composer install
-- php wc2018-notifications app:install database
 - php wc2018-notifications migrate:fresh
 - php wc2018-notifications fetch:matches
-- schedule wc2018-notifications commands in crontab
+- schedule wc2018-notifications in your crontab file
 
 ## Notifications 
 
 - Match start / end
 - Score change
 - Match events (penalty, card, goal, ...)
+- Today's matches with statistics 
 
 ## TODO
 
