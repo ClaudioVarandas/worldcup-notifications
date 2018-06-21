@@ -127,14 +127,14 @@ class FetchMatches extends Command
             if(is_array($homeTeamStatistics)){
                 $attachments[$key]['fields'][] = [
                     "title" => 'Home Team Stats',
-                    "value" => $this->team_stats($homeTeamStatistics),
+                    "value" => $this->processTeamStats($homeTeamStatistics),
                     "short" => false
                 ];
             }
             if(is_array($awayTeamStatistics)){
                 $attachments[$key]['fields'][] = [
                     "title" => 'Away Team Stats',
-                    "value" => $this->team_stats($awayTeamStatistics),
+                    "value" => $this->processTeamStats($awayTeamStatistics),
                     "short" => false
                 ];
             }
@@ -193,26 +193,26 @@ class FetchMatches extends Command
         $schedule->command(static::class, ['today'])->dailyAt('21:30')->timezone(config('app.timezone'));
     }
 
-    private function team_stats(array $stats): string
+    private function processTeamStats(array $stats): string
     {
-        $team_stats = "Attempts On Goal: " . $stats['attempts_on_goal'] ."\n";
-        $team_stats .= "On Target: " . $stats['on_target'] ."\n";
-        $team_stats .= "Off Target: " . $stats['off_target'] ."\n";
-        $team_stats .= "Blocked: " . $stats['blocked'] ."\n";
-        $team_stats .= "Woodwork: " . $stats['woodwork'] ."\n";
-        $team_stats .= "Corners: " . $stats['corners'] ."\n";
-        $team_stats .= "Offsides: " . $stats['offsides'] ."\n";
-        $team_stats .= "Ball possession: " . $stats['ball_possession'] ."%\n";
-        $team_stats .= "Pass Accuracy: " . $stats['pass_accuracy'] ."%\n";
-        $team_stats .= "Number of passes: " . $stats['num_passes'] ."\n";
-        $team_stats .= "Passes completed: " . $stats['passes_completed'] ."\n";
-        $team_stats .= "Distance covered: " . $stats['distance_covered'] ."km\n";
-        $team_stats .= "Tackles: " . $stats['tackles'] ."\n";
-        $team_stats .= "Clearences: " . $stats['clearences'] ."\n";
-        $team_stats .= "Yellow Cards: " . $stats['yellow_cards'] ."\n";
-        $team_stats .= "Red Cards: " . $stats['red_cards'] ."\n";
-        $team_stats .= "Fouls committed: " . $stats['fouls_committed'] ."\n";
+        $teamStats = "Attempts On Goal: " . $stats['attempts_on_goal'] ."\n";
+        $teamStats .= "On Target: " . $stats['on_target'] ."\n";
+        $teamStats .= "Off Target: " . $stats['off_target'] ."\n";
+        $teamStats .= "Blocked: " . $stats['blocked'] ."\n";
+        $teamStats .= "Woodwork: " . $stats['woodwork'] ."\n";
+        $teamStats .= "Corners: " . $stats['corners'] ."\n";
+        $teamStats .= "Offsides: " . $stats['offsides'] ."\n";
+        $teamStats .= "Ball possession: " . $stats['ball_possession'] ."%\n";
+        $teamStats .= "Pass Accuracy: " . $stats['pass_accuracy'] ."%\n";
+        $teamStats .= "Number of passes: " . $stats['num_passes'] ."\n";
+        $teamStats .= "Passes completed: " . $stats['passes_completed'] ."\n";
+        $teamStats .= "Distance covered: " . $stats['distance_covered'] ."km\n";
+        $teamStats .= "Tackles: " . $stats['tackles'] ."\n";
+        $teamStats .= "Clearances: " . $stats['clearances'] ."\n";
+        $teamStats .= "Yellow Cards: " . $stats['yellow_cards'] ."\n";
+        $teamStats .= "Red Cards: " . $stats['red_cards'] ."\n";
+        $teamStats .= "Fouls committed: " . $stats['fouls_committed'] ."\n";
 
-        return $team_stats;
+        return $teamStats;
     }
 }
