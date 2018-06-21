@@ -101,6 +101,8 @@ class FetchMatches extends Command
                     break;
             }
 
+            $homeTeamStatistics = $row['home_team_statistics'];
+            $awayTeamStatistics = $row['away_team_statistics'];
             $attachments[$key]['title'] = "{$row['home_team']['country']} - {$row['away_team']['country']}";
             $attachments[$key]['fields'][] = [
                 "title" => 'Venue',
@@ -122,16 +124,20 @@ class FetchMatches extends Command
                 "value" => $row['status'],
                 "short" => true
             ];
-            $attachments[$key]['fields'][] = [
-                "title" => 'Home Team Stats',
-                "value" => $this->team_stats($row['home_team_statistics']),
-                "short" => false
-            ];
-            $attachments[$key]['fields'][] = [
-                "title" => 'Away Team Stats',
-                "value" => $this->team_stats($row['away_team_statistics']),
-                "short" => false
-            ];
+            if(is_array($homeTeamStatistics)){
+                $attachments[$key]['fields'][] = [
+                    "title" => 'Home Team Stats',
+                    "value" => $this->team_stats($homeTeamStatistics),
+                    "short" => false
+                ];
+            }
+            if(is_array($awayTeamStatistics)){
+                $attachments[$key]['fields'][] = [
+                    "title" => 'Away Team Stats',
+                    "value" => $this->team_stats($awayTeamStatistics),
+                    "short" => false
+                ];
+            }
             if ($row['status'] == 'completed' || $row['status'] == 'in progress') {
                 $attachments[$key]['fields'][] = [
                     "title" => 'Score',
