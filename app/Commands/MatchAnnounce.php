@@ -24,6 +24,27 @@ class MatchAnnounce extends Command
      */
     protected $description = 'Match announcements - Score,Start,End';
 
+    protected $matchFillable = [
+        'venue',
+        'location',
+        'datetime',
+        'status',
+        'time',
+        'fifa_id',
+        'home_team',
+        'away_team',
+        'home_team_events',
+        'away_team_events',
+        'home_team_statistics',
+        'away_team_statistics',
+        'home_team_country',
+        'away_team_country',
+        'winner',
+        'winner_code',
+        'last_event_update_at',
+        'last_score_update_at'
+    ];
+
     /**
      * Execute the console command.
      */
@@ -84,7 +105,7 @@ class MatchAnnounce extends Command
     protected function updateMatch($matchId, array $data)
     {
         // Update the match in db
-        $updateData = $data;
+        $updateData = array_only($data, $this->matchFillable);
         $updateData['home_team_events'] = isset($data['home_team_events']) ? json_encode($data['home_team_events']) : null;
         $updateData['away_team_events'] = isset($data['away_team_events']) ? json_encode($data['away_team_events']) : null;
         $updateData['home_team_statistics'] = isset($data['home_team_statistics']) ? json_encode($data['home_team_statistics']) : null;
