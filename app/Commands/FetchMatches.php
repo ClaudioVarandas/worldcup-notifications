@@ -16,6 +16,31 @@ class FetchMatches extends Command
         'tomorrow'
     ];
 
+    protected $matchFillable = [
+        'venue',
+        'location',
+        'datetime',
+        'status',
+        'time',
+        'fifa_id',
+        'weather',
+        'attendance',
+        'officials',
+        'stage_name',
+        'home_team',
+        'away_team',
+        'home_team_events',
+        'away_team_events',
+        'home_team_statistics',
+        'away_team_statistics',
+        'home_team_country',
+        'away_team_country',
+        'winner',
+        'winner_code',
+        'last_event_update_at',
+        'last_score_update_at'
+    ];
+
     /**
      * The signature of the command.
      *
@@ -47,6 +72,10 @@ class FetchMatches extends Command
         $res = $client->request('GET', $uri);
         $data = json_decode($res->getBody(), true);
 
+        if(empty($data)){
+            return;
+        }
+
         if ($type == 'all') {
             $this->processMatches($data);
         } else {
@@ -58,22 +87,27 @@ class FetchMatches extends Command
     public function processMatches(array $data)
     {
         foreach ($data as $row) {
-            $datetime = Carbon::parse($row['datetime'])->toDateTimeString();
-            $message = "{$datetime} | {$row['home_team']['country']} - {$row['away_team']['country']}";
-            $row['home_team'] = json_encode($row['home_team']);
-            $row['away_team'] = json_encode($row['away_team']);
-            $row['home_team_events'] = isset($row['home_team_events']) ? json_encode($row['home_team_events']) : null;
-            $row['away_team_events'] = isset($row['away_team_events']) ? json_encode($row['away_team_events']) : null;
-            $row['home_team_statistics'] = isset($row['home_team_statistics']) ? json_encode($row['home_team_statistics']) : null;
-            $row['away_team_statistics'] = isset($row['away_team_statistics']) ? json_encode($row['away_team_statistics']) : null;
-            $row['updated_at'] = Carbon::now();
-            $match = DB::table('matches')->where('fifa_id', $row['fifa_id'])->first();
+            $matchData = array_only($row, $this->matchFillable);
+            $datetime = Carbon::parse($matchData['datetime'])->toDateTimeString();
+            $message = "{$datetime} | {$matchData['home_team']['country']} - {$matchData['away_team']['country']}";
+            // 
+            $matchData['home_team_events'] = isset($row['home_team_events']) ? json_encode($row['home_team_events']) : null;
+            $matchData['away_team_events'] = isset($row['away_team_events']) ? json_encode($row['away_team_events']) : null;
+            $matchData['home_team_statistics'] = isset($row['home_team_statistics']) ? json_encode($row['home_team_statistics']) : null;
+            $matchData['away_team_statistics'] = isset($row['away_team_statistics']) ? json_encode($row['away_team_statistics']) : null;
+            $matchData['weather'] = isset($row['weather']) ? json_encode($row['weather']) : null;
+            $matchData['officials'] = isset($row['officials']) ? json_encode($row['officials']) : null;
+            $matchData['home_team'] = json_encode($row['home_team']);
+            $matchData['away_team'] = json_encode($row['away_team']);
+            $matchData['updated_at'] = Carbon::now();
+            //
+            $match = DB::table('matches')->where('fifa_id', $matchData['fifa_id'])->first();
             if (is_null($match)) {
-                $row['created_at'] = Carbon::now();
-                DB::table('matches')->insert($row);
+                $matchData['created_at'] = Carbon::now();
+                DB::table('matches')->insert($matchData);
                 $this->info("Created : " . $message);
             } else {
-                DB::table('matches')->where('id', $match->id)->update($row);
+                DB::table('matches')->where('id', $match->id)->update($matchData);
                 $this->info("Updated : " . $message);
             }
         }
@@ -82,7 +116,7 @@ class FetchMatches extends Command
     protected function postToSlack(array $data, string $type)
     {
         $client = new Client();
-        $pretextMessage = $type == 'today' ? "Today matches status" : "Tomorrow matches";
+        $beforeMessageText = $type == 'today' ? "Today matches status" : "Tomorrow matches";
 
         $attachments = [];
         foreach ($data as $key => $row) {
@@ -101,9 +135,15 @@ class FetchMatches extends Command
                     break;
             }
 
-            $homeTeamStatistics = $row['home_team_statistics'];
-            $awayTeamStatistics = $row['away_team_statistics'];
+            $homeTeamStatistics = $row['home_team_statistics'] ?? null;
+            $awayTeamStatistics = $row['away_team_statistics'] ?? null;
             $attachments[$key]['title'] = "{$row['home_team']['country']} - {$row['away_team']['country']}";
+
+            $attachments[$key]['fields'][] = [
+                "pretext" => 'Stage',
+                "value" => $row['stage_name'],
+                "short" => false
+            ];
             $attachments[$key]['fields'][] = [
                 "title" => 'Venue',
                 "value" => $row['venue'],
@@ -161,7 +201,7 @@ class FetchMatches extends Command
                 $postData['channel'] = $webhook['channel'];
             }
             // Send requests
-            $postData['text'] = $pretextMessage;
+            $postData['text'] = $beforeMessageText;
             $client->post($webhook['url'], [
                 'headers' => [
                     'content-type' => 'application/json'

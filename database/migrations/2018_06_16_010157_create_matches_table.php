@@ -21,6 +21,10 @@ class CreateMatchesTable extends Migration
             $table->string('status');
             $table->string('time')->nullable();
             $table->string('fifa_id');
+            $table->string('stage_name');
+            $table->json('weather')->nullable();
+            $table->string('attendance')->nullable();
+            $table->json('officials')->nullable();
             $table->json('home_team');
             $table->json('away_team');
             $table->json('home_team_events')->nullable();

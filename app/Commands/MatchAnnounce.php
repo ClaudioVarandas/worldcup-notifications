@@ -112,6 +112,8 @@ class MatchAnnounce extends Command
         $updateData['away_team_statistics'] = isset($data['away_team_statistics']) ? json_encode($data['away_team_statistics']) : null;
         $updateData['home_team'] = json_encode($data['home_team']);
         $updateData['away_team'] = json_encode($data['away_team']);
+        $updateData['weather'] = isset($data['weather']) ? json_encode($data['weather']) : null;
+        $updateData['officials'] = isset($data['officials']) ? json_encode($data['officials']) : null;
         $updateData['updated_at'] = Carbon::now();
         $result = DB::table('matches')->where('id', $matchId)->update($updateData);
         return $result;
